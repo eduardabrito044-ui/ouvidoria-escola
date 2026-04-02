@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ouvidoria Escolar | Conectando Alunos</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="background-radial"></div>
+
+    <div class="container">
+        <header>
+            <h1>Ouvidoria Escolar 🎓</h1>
+            <p>Sua voz constrói o futuro da nossa escola.</p>
+        </header>
+
+        <main class="grid">
+            <section class="card glass">
+                <h3>Acesso Seguro</h3>
+                <input type="text" id="schoolName" placeholder="Nome da Escola">
+                <input type="text" id="nickname" placeholder="Crie seu Apelido">
+                <button onclick="fazerLogin()">Entrar no Fórum</button>
+            </section>
+
+            <section class="card glass">
+                <h3>💡 Mural de Ideias</h3>
+                <div id="ideiaPostada">
+                    <p>"Novos livros para a biblioteca?"</p>
+                    <button class="btn-voto" onclick="votar()">Votar: <span id="contagem">0</span></button>
+                </div>
+            </section>
+
+            <section class="card glass">
+                <h3>Como você está hoje?</h3>
+                <div class="emojis">
+                    <button onclick="setMood('Feliz')">😊</button>
+                    <button onclick="setMood('Triste')">😢</button>
+                    <button onclick="setMood('Cansado')">😴</button>
+                </div>
+                <p id="statusMood"></p>
+            </section>
+
+            <section class="card glass full-width warning">
+                <h3>🛡️ Denúncia Anônima (Bullying)</h3>
+                <p>Espaço 100% seguro e sigiloso.</p>
+                <textarea id="denuncia" placeholder="Descreva o ocorrido aqui..."></textarea>
+                <button onclick="enviarDenuncia()">Enviar com Sigilo</button>
+            </section>
+        </main>
+
+        <footer>
+            <p>Contato: @m.eduarda.brito25 | (89) 98125-9467</p>
+            <p>E-mail: eduardabrito044@gmail.com</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
