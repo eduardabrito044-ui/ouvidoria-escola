@@ -2,59 +2,55 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ouvidoria Escolar | Conectando Alunos</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Web Voice Player</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding-top: 50px; background: #121212; color: white; }
+        button { padding: 20px 40px; font-size: 20px; cursor: pointer; border-radius: 50px; border: none; background: #1DB954; color: white; font-weight: bold; }
+        #status { margin-top: 20px; font-size: 1.2em; }
+    </style>
 </head>
 <body>
-    <div class="background-radial"></div>
 
-    <div class="container">
-        <header>
-            <h1>Ouvidoria Escolar 🎓</h1>
-            <p>Sua voz constrói o futuro da nossa escola.</p>
-        </header>
+    <h1>Diga: "Tocar [Nome da Música]"</h1>
+    <button id="btnStart">🎤 Falar</button>
+    <p id="status">Clique no botão e peça uma música...</p>
+    <audio id="musicPlayer" controls style="display:none;"></audio>
 
-        <main class="grid">
-            <section class="card glass">
-                <h3>Acesso Seguro</h3>
-                <input type="text" id="schoolName" placeholder="Nome da Escola">
-                <input type="text" id="nickname" placeholder="Crie seu Apelido">
-                <button onclick="fazerLogin()">Entrar no Fórum</button>
-            </section>
+    <script>
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        const player = document.getElementById('musicPlayer');
+        const status = document.getElementById('status');
+        
+        recognition.lang = 'pt-BR';
 
-            <section class="card glass">
-                <h3>💡 Mural de Ideias</h3>
-                <div id="ideiaPostada">
-                    <p>"Novos livros para a biblioteca?"</p>
-                    <button class="btn-voto" onclick="votar()">Votar: <span id="contagem">0</span></button>
-                </div>
-            </section>
+        document.getElementById('btnStart').onclick = () => recognition.start();
 
-            <section class="card glass">
-                <h3>Como você está hoje?</h3>
-                <div class="emojis">
-                    <button onclick="setMood('Feliz')">😊</button>
-                    <button onclick="setMood('Triste')">😢</button>
-                    <button onclick="setMood('Cansado')">😴</button>
-                </div>
-                <p id="statusMood"></p>
-            </section>
-
-            <section class="card glass full-width warning">
-                <h3>🛡️ Denúncia Anônima (Bullying)</h3>
-                <p>Espaço 100% seguro e sigiloso.</p>
-                <textarea id="denuncia" placeholder="Descreva o ocorrido aqui..."></textarea>
-                <button onclick="enviarDenuncia()">Enviar com Sigilo</button>
-            </section>
-        </main>
-
-        <footer>
-            <p>Contato: @m.eduarda.brito25 | (89) 98125-9467</p>
-            <p>E-mail: eduardabrito044@gmail.com</p>
-        </footer>
-    </div>
-
-    <script src="script.js"></script>
+        recognition.onresult = async (event) => {
+            const comando = event.results[0][0].transcript.toLowerCase();
+            
+            if (comando.includes("tocar")) {
+                const termoBusca = comando.replace("tocar", "").trim();
+                status.innerText = "Buscando por: " + termoBusca + "...";
+                
+                // Busca na API da Deezer
+                try {
+                    const response = await fetch(`https://api.deezer.com/search?q=${termoBusca}&limit=1`);
+                    const data = await response.json();
+                    
+                    if (data.data.length > 0) {
+                        const musica = data.data[0];
+                        player.src = musica.preview; // A API da Deezer fornece um trecho de 30s
+                        player.style.display = "block";
+                        player.play();
+                        status.innerText = "Tocando: " + musica.title + " - " + musica.artist.name;
+                    } else {
+                        status.innerText = "Não encontrei essa música.";
+                    }
+                } catch (e) {
+                    status.innerText = "Erro ao conectar com a API.";
+                }
+            }
+        };
+    </script>
 </body>
 </html>
