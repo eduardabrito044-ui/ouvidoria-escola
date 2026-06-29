@@ -2,19 +2,21 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Web Voice Player</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Player de Voz</title>
     <style>
-        body { font-family: sans-serif; text-align: center; padding-top: 50px; background: #121212; color: white; }
-        button { padding: 20px 40px; font-size: 20px; cursor: pointer; border-radius: 50px; border: none; background: #1DB954; color: white; font-weight: bold; }
-        #status { margin-top: 20px; font-size: 1.2em; }
+        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        button { padding: 20px 40px; font-size: 20px; border-radius: 50px; border: none; background: #1DB954; color: white; cursor: pointer; margin-bottom: 20px; }
+        #status { font-size: 1.2em; text-align: center; padding: 0 20px; }
+        #musicPlayer { margin-top: 20px; width: 80%; }
     </style>
 </head>
 <body>
 
-    <h1>Diga: "Tocar [Nome da Música]"</h1>
-    <button id="btnStart">🎤 Falar</button>
-    <p id="status">Clique no botão e peça uma música...</p>
-    <audio id="musicPlayer" controls style="display:none;"></audio>
+    <h1>Diga: "Tocar Dois Corações da banda Melinha"</h1>
+    <button id="btnStart">🎤 Falar agora</button>
+    <p id="status">Clique no botão e peça sua música...</p>
+    <audio id="musicPlayer" controls></audio>
 
     <script>
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
@@ -23,32 +25,37 @@
         
         recognition.lang = 'pt-BR';
 
-        document.getElementById('btnStart').onclick = () => recognition.start();
+        document.getElementById('btnStart').onclick = () => {
+            recognition.start();
+            status.innerText = "Ouvindo...";
+        };
 
         recognition.onresult = async (event) => {
             const comando = event.results[0][0].transcript.toLowerCase();
+            const termoBusca = comando.replace("tocar", "").trim();
+            status.innerText = "Buscando: " + termoBusca + "...";
             
-            if (comando.includes("tocar")) {
-                const termoBusca = comando.replace("tocar", "").trim();
-                status.innerText = "Buscando por: " + termoBusca + "...";
+            try {
+                // Usando a API da Deezer com um Proxy confiável
+                const apiURL = `https://api.deezer.com/search?q=${encodeURIComponent(termoBusca)}&limit=1`;
+                const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(apiURL)}`);
+                const data = await response.json();
+                const jsonContent = JSON.parse(data.contents);
                 
-                // Busca na API da Deezer
-                try {
-                    const response = await fetch(`https://api.deezer.com/search?q=${termoBusca}&limit=1`);
-                    const data = await response.json();
+                if (jsonContent.data && jsonContent.data.length > 0) {
+                    const musica = jsonContent.data[0];
+                    player.src = musica.preview;
+                    status.innerText = "Tocando: " + musica.title + " - " + musica.artist.name;
                     
-                    if (data.data.length > 0) {
-                        const musica = data.data[0];
-                        player.src = musica.preview; // A API da Deezer fornece um trecho de 30s
-                        player.style.display = "block";
-                        player.play();
-                        status.innerText = "Tocando: " + musica.title + " - " + musica.artist.name;
-                    } else {
-                        status.innerText = "Não encontrei essa música.";
-                    }
-                } catch (e) {
-                    status.innerText = "Erro ao conectar com a API.";
+                    // Tentar tocar automaticamente
+                    player.play().catch(() => {
+                        status.innerText = "Toque no botão 'Play' do player abaixo para começar.";
+                    });
+                } else {
+                    status.innerText = "Não achei a música. Tente falar o nome do artista junto.";
                 }
+            } catch (e) {
+                status.innerText = "Erro ao buscar. Tente novamente.";
             }
         };
     </script>
